@@ -1,10 +1,12 @@
 // Modules to control application life and create native browser window
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+
+let mainWindow: BrowserWindow;
 
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -39,3 +41,26 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+// handle createBrowserWindow in main process
+ipcMain.handle(
+  "createBrowserWindow",
+  (event, options: Electron.BrowserWindowConstructorOptions = {}) => {
+    let browserWindow = new BrowserWindow(options);
+    let id = browserWindow.id;
+    ipcMain.handle(`${id}_show`, () => {
+      browserWindow.show();
+    });
+    ipcMain.handle(`${id}_close`, () => {
+      browserWindow.close();
+    });
+    browserWindow.on("closed", () => {
+      mainWindow.webContents.send(`${id}_closed`);
+      ipcMain.removeHandler(`${id}_show`);
+      ipcMain.removeHandler(`${id}_close`);
+      browserWindow = null;
+      id = null;
+    });
+    return browserWindow.id;
+  }
+);
