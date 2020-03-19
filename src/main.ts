@@ -45,7 +45,10 @@ app.on("activate", () => {
 // handle createBrowserWindow in main process
 ipcMain.handle(
   "createBrowserWindow",
-  (event, options: Electron.BrowserWindowConstructorOptions = {}) => {
+  (
+    e: Electron.IpcMainInvokeEvent,
+    options: Electron.BrowserWindowConstructorOptions = {}
+  ) => {
     let browserWindow = new BrowserWindow(options);
     let id = browserWindow.id;
 
