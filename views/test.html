@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>test</title>
+  </head>
+  <body>
+    <h1>Content: <span id="content"></span></h1>
+    <button id="click">Thank Parent</button>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      let id;
+
+      ipcRenderer.on("initialize", (event, ...args) => {
+        id = args[0];
+        const options = args[1];
+
+        const contentEl = document.getElementById("content");
+        contentEl.textContent = options.content;
+      });
+
+      document.getElementById("click").addEventListener("click", () => {
+        ipcRenderer.send(`${id}_message`, "Thanks!");
+      });
+    </script>
+  </body>
+</html>

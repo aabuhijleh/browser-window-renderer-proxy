@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, IpcMainEvent } from "electron";
 import path from "path";
 
 let mainWindow: BrowserWindow;
@@ -48,19 +48,54 @@ ipcMain.handle(
   (event, options: Electron.BrowserWindowConstructorOptions = {}) => {
     let browserWindow = new BrowserWindow(options);
     let id = browserWindow.id;
-    ipcMain.handle(`${id}_show`, () => {
-      browserWindow.show();
-    });
+
+    ipcMain.handle(
+      `${id}_show`,
+      (
+        event: Electron.IpcMainInvokeEvent,
+        showOptions: { focused: boolean }
+      ) => {
+        if (showOptions.focused) {
+          browserWindow.show();
+        } else {
+          browserWindow.showInactive();
+        }
+      }
+    );
+
     ipcMain.handle(`${id}_close`, () => {
       browserWindow.close();
     });
+
+    ipcMain.handle(
+      `${id}_loadURL`,
+      (event: Electron.IpcMainInvokeEvent, url: string): Promise<void> => {
+        return browserWindow.loadURL(url);
+      }
+    );
+
+    ipcMain.handle(
+      `${id}_send`,
+      (event: Electron.IpcMainInvokeEvent, channel: string, ...args: any[]) => {
+        browserWindow.webContents.send(channel, id, ...args);
+      }
+    );
+
+    ipcMain.on(`${id}_message`, (event: IpcMainEvent, ...args: any[]) => {
+      mainWindow.webContents.send(`${id}_message`, ...args);
+    });
+
     browserWindow.on("closed", () => {
       mainWindow.webContents.send(`${id}_closed`);
       ipcMain.removeHandler(`${id}_show`);
       ipcMain.removeHandler(`${id}_close`);
+      ipcMain.removeHandler(`${id}_loadURL`);
+      ipcMain.removeHandler(`${id}_send`);
+      ipcMain.removeAllListeners(`${id}_message`);
       browserWindow = null;
       id = null;
     });
+
     return browserWindow.id;
   }
 );
