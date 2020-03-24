@@ -11,10 +11,10 @@
 
     <script>
       const { ipcRenderer } = require("electron");
-      let id;
+      let browserWindowId;
 
       ipcRenderer.on("initialize", (event, ...args) => {
-        id = args[0];
+        browserWindowId = args[0];
         const options = args[1];
 
         const contentEl = document.getElementById("content");
@@ -22,7 +22,7 @@
       });
 
       document.getElementById("click").addEventListener("click", () => {
-        ipcRenderer.send(`${id}_message`, "Thanks!");
+        ipcRenderer.send(`${browserWindowId}_message`, "Thanks!");
       });
     </script>
   </body>

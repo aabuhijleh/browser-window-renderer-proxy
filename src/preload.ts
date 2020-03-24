@@ -5,7 +5,7 @@ import path from "path";
 // use this function to create and manage browserWindows from this renderer process
 async function createBrowserWindow(
   options: Electron.BrowserWindowConstructorOptions = {}
-): Promise<BrowserWindowRendererProxy> {
+): Promise<IBrowserWindowRendererProxy> {
   const id: number = await ipcRenderer.invoke(`createBrowserWindow`, options);
   return new BrowserWindowRendererProxy(id);
 }
@@ -75,8 +75,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  testWindow.on("message", (...args: any[]) => {
-    console.log("message", ...args);
+  testWindow.on("message", msg => {
+    console.log("message", msg);
   });
 
   console.log("loading");
