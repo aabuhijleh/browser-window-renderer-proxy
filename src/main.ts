@@ -17,6 +17,11 @@ function createWindow() {
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "../views", "index.html"));
 
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+    app.exit(0);
+  });
+
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 }
@@ -89,7 +94,7 @@ ipcMain.handle(
     });
 
     browserWindow.on("closed", () => {
-      mainWindow.webContents.send(`${id}_closed`);
+      if (mainWindow) mainWindow.webContents.send(`${id}_closed`);
       ipcMain.removeHandler(`${id}_show`);
       ipcMain.removeHandler(`${id}_close`);
       ipcMain.removeHandler(`${id}_loadURL`);
