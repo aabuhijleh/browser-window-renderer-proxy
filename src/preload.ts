@@ -55,7 +55,7 @@ class BrowserWindowRendererProxy extends EventEmitter
 
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("DOMContentLoaded", () => {
   const replaceText = (selector, text) => {
     const element = document.getElementById(selector);
     if (element) element.innerText = text;
@@ -65,41 +65,44 @@ window.addEventListener("DOMContentLoaded", async () => {
     replaceText(`${type}-version`, process.versions[type]);
   }
 
-  // example usage of createBrowserWindow
-  let testWindow: IBrowserWindowRendererProxy = await createBrowserWindow({
-    width: 300,
-    height: 300,
-    show: false,
-    webPreferences: {
-      nodeIntegration: true
-    }
-  });
+  document.getElementById("child").addEventListener("click", async () => {
+    // example usage of createBrowserWindow
+    let testWindow: IBrowserWindowRendererProxy = await createBrowserWindow({
+      width: 300,
+      height: 300,
+      show: false,
+      modal: true,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    });
 
-  testWindow.on("message", msg => {
-    console.log("message", msg);
-  });
+    testWindow.on("message", msg => {
+      console.log("message", msg);
+    });
 
-  console.log("loading");
-  await testWindow.loadURL(
-    "file://" + path.join(__dirname, "../views", "test.html")
-  );
-  console.log("loaded");
+    console.log("loading");
+    await testWindow.loadURL(
+      "file://" + path.join(__dirname, "../views", "test.html")
+    );
+    console.log("loaded");
 
-  console.log("initializing");
-  await testWindow.send("initialize", { content: "Hello World" });
-  console.log("initialized");
+    console.log("initializing");
+    await testWindow.send("initialize", { content: "Hello World" });
+    console.log("initialized");
 
-  console.log("showing");
-  await testWindow.show();
-  console.log("showed");
+    console.log("showing");
+    await testWindow.show();
+    console.log("showed");
 
-  // setTimeout(() => {
-  //   console.log("closing");
-  //   testWindow.close();
-  // }, 2000);
+    // setTimeout(() => {
+    //   console.log("closing");
+    //   testWindow.close();
+    // }, 2000);
 
-  testWindow.once("closed", () => {
-    console.log("closed");
-    testWindow = null;
+    testWindow.once("closed", () => {
+      console.log("closed");
+      testWindow = null;
+    });
   });
 });

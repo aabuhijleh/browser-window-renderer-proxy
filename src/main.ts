@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-import { app, BrowserWindow, ipcMain, IpcMainEvent } from "electron";
+import { app, BrowserWindow, ipcMain, IpcMainEvent, screen } from "electron";
 import path from "path";
 
 let mainWindow: BrowserWindow;
@@ -54,9 +54,16 @@ ipcMain.handle(
     e: Electron.IpcMainInvokeEvent,
     options: Electron.BrowserWindowConstructorOptions = {}
   ) => {
-    if (options.modal) {
-      options.parent = mainWindow || null;
+    // if window is a modal, set parent as mainBrowserWindow and
+    // center window in the display mainBrowserWindow exists in
+    const { modal, width, height, x, y } = options;
+    if (mainWindow && modal && width && height) {
+      options.parent = mainWindow;
+      const { workArea } = screen.getDisplayMatching(mainWindow.getBounds());
+      options.x = x || Math.ceil(workArea.x + (workArea.width - width) / 2);
+      options.y = y || Math.ceil(workArea.y + (workArea.height - height) / 2);
     }
+
     let browserWindow = new BrowserWindow(options);
     let id = browserWindow.id;
 
