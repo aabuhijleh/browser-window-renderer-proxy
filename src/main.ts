@@ -54,6 +54,9 @@ ipcMain.handle(
     e: Electron.IpcMainInvokeEvent,
     options: Electron.BrowserWindowConstructorOptions = {}
   ) => {
+    if (options.modal) {
+      options.parent = mainWindow || null;
+    }
     let browserWindow = new BrowserWindow(options);
     let id = browserWindow.id;
 
